@@ -14,7 +14,7 @@ class Wttr
     Wttr(const std::string &iniFileSrc)
     {
         readIniFile(iniFileSrc);
-        if (!createDB())
+        /*if (!createDB())
         {
             Logger::getInstance().logError("Failed to create or open database");
             throw std::runtime_error("Database initialization failed");
@@ -22,7 +22,7 @@ class Wttr
         else
         {
             Logger::getInstance().logInfo("Database initialized successfully");
-        }
+        }*/
     }
 
     ~Wttr()
@@ -96,6 +96,9 @@ class Wttr
                 }
             },
             readPeriod_);
+
+        scheduler_.addTask([this]() { Logger::getInstance().Write(); },
+                           5); // co 5 sekund flush do pliku
 
         scheduler_.run();
     }

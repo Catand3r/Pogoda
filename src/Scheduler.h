@@ -58,14 +58,6 @@ WeatcherFetchingTask( Citites cities) : cities_(citites)
 
     Citites cities_
 }
-
-struct LoggerTask : public Task
-{
-void Run() override
-{
-Logger::getInstance().Write();
-}
-}
 */
 
 class IScheduler

@@ -23,6 +23,12 @@ class Executor
     }
     void execute(Task &task)
     {
+
+        if (!task.taskFuture.valid())
+        {
+            task.taskFuture = std::async(std::launch::async, task.func);
+        }
+
         auto status = task.taskFuture.wait_for(std::chrono::seconds(0));
         if (status == std::future_status::ready)
         {
