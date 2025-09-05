@@ -1,4 +1,4 @@
-#include "include/wttr.h"
+#include "wttr.h"
 
 int main()
 {

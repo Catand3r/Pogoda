@@ -109,13 +109,11 @@ class Scheduler : public IScheduler
         while (running_)
         {
             auto now = std::chrono::steady_clock::now();
-            std::lock_guard<std::mutex> lock(mtx_);
             for (auto &task : tasks_)
             {
                 if (now >= task.nextRun)
                 {
                     Executor::getInstance().execute(task);
-                    // tutaj przekazaæ ca³y task
                     task.nextRun = now + task.interval;
                 }
             }
