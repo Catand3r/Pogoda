@@ -147,7 +147,9 @@
   <ItemGroup>
     <ClInclude Include="src\Executor.h" />
     <ClInclude Include="src\Http.h" />
+    <ClInclude Include="src\IDataParser.h" />
     <ClInclude Include="src\inicpp.h" />
+    <ClInclude Include="src\IniWrapper.h" />
     <ClInclude Include="src\isqlengine.h" />
     <ClInclude Include="src\Logger.h" />
     <ClInclude Include="src\Scheduler.h" />
