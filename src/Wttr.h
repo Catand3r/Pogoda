@@ -4,12 +4,17 @@
 #include "Scheduler.h"
 #include "inicpp.h"
 #include "isqlengine.h"
+#include "WeatherFetchingTask.h"
+#include "LoggingTask.h"
+
 #include <fstream>
 #include <memory>
 #include <nlohmann/json.hpp>
 
 class Wttr
 {
+public:
+    using Cities = std::vector<std::string>;
   public:
     Wttr(const std::string &iniFileSrc)
     {
@@ -39,67 +44,12 @@ class Wttr
     {
         Scheduler &scheduler_ = Scheduler::getInstance();
 
-        //todo
-        scheduler_.addTask(
-            [this]() {
-                try
-                {
-                    if (!outFile_.is_open())
-                    {
-                        outFile_.open("../pogoda.json", std::ios::trunc);
-                    }
 
-                    for (const auto &city : cities_)
-                    {
-                        Logger::getInstance().logInfo("Fetching weather for city: " + city);
-                        auto response = HttpClient::getInstance().get("https://wttr.in/" + city + "?format=j1");
+        auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, readPeriod_);
+        scheduler_.addTask(std::move(weatherTask));
 
-                        if (!outFile_.is_open())
-                        {
-                            Logger::getInstance().logError("Failed to open output file");
-                            return;
-                        }
-
-                        // zamiast nlohmann -> IDataParser
-                        json_ = nlohmann::json::parse(response);
-
-                        // from_json() // struct WeatherData{ cirt, desc, temp, feels, humidity, wind}
-                        std::string city = json_["nearest_area"][0]["areaName"][0]["value"].get<std::string>();
-                        std::string desc = json_["current_condition"][0]["weatherDesc"][0]["value"].get<std::string>();
-                        std::string temp = json_["current_condition"][0]["tempC"].get<std::string>();
-                        std::string feels = json_["current_condition"][0]["FeelsLikeC"].get<std::string>();
-                        std::string humidity = json_["current_condition"][0]["humidity"].get<std::string>();
-                        std::string wind = json_["current_condition"][0]["windspeedKmph"].get<std::string>();
-
-                        std::ostringstream oss;
-                        oss << "INSERT INTO Pogoda(city, description, temperature, humidity, wind) VALUES("
-                            << "'" << city << "', "
-                            << "'" << desc << "', "
-                            << "'" << temp << " (" << feels << ")" << "', "
-                            << "'" << humidity << "', "
-                            << "'" << wind << "');";
-
-                        std::string query = oss.str();
-
-                        ISQLEngine::QueryResult queryResult;
-
-                        if (!db_->exec(query, queryResult))
-                        {
-                            Logger::getInstance().logError("Failed to execute query: " + query);
-                            continue;
-                        }
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    Logger::getInstance().logError("Error fetching weather data: " + std::string(e.what()));
-                    return;
-                }
-            },
-            readPeriod_);
-
-        scheduler_.addTask([this]() { Logger::getInstance().Write(); },
-                           5); // co 5 sekund flush do pliku
+        auto loggingTask = std::make_unique<LoggingTask>(5000);
+        scheduler_.addTask(std::move(loggingTask));
 
         scheduler_.run();
     }
@@ -111,9 +61,9 @@ class Wttr
 
     nlohmann::json json_; // IDataParser& // std::unique_ptr<IDataParser>
 
-    std::vector<std::string> cities_;
+    Cities cities_;
 
-    int readPeriod_ = 0;
+    uint64_t readPeriod_ = 0; // miliseconds
 
     void readIniFile(const std::string &iniFileSrc)
     {
@@ -131,7 +81,7 @@ class Wttr
             throw;
         }
 
-        readPeriod_ = iniFile["Settings"]["ReadPeriod"].as<int>(); // exception
+        readPeriod_ = iniFile["Settings"]["ReadPeriod"].as<int>() * 1000; // exception
         /*
         GetString("Settings", "ReadPeriod", 5);
 
