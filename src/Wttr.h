@@ -1,6 +1,7 @@
 #pragma once
 #include "Http.h"
 #include "IDataParser.h"
+#include "IniWrapper.h"
 #include "Logger.h"
 #include "Scheduler.h"
 #include "inicpp.h"
@@ -13,8 +14,10 @@ class Wttr
   public:
     Wttr(const std::string &iniFileSrc)
     {
-        readIniFile(iniFileSrc);
+        ini_ = std::make_unique<IniWrapper>(iniFileSrc);
         parser_ = std::make_unique<DataParser>();
+
+        readIniFile();
         /*if (!createDB())
         {
             Logger::getInstance().logError("Failed to create or open database");
@@ -109,6 +112,8 @@ class Wttr
   private:
     std::unique_ptr<ISQLEngine> db_;
 
+    std::unique_ptr<IIniWrapper> ini_;
+
     std::ofstream outFile_;
 
     std::unique_ptr<IDataParser> parser_;
@@ -117,40 +122,11 @@ class Wttr
 
     int readPeriod_ = 0;
 
-    void readIniFile(const std::string &iniFileSrc)
+    void readIniFile()
     {
-        auto &logger = Logger::getInstance();
+        readPeriod_ = std::stoi(ini_->getValue("Settings", "ReadPeriod", "5"));
 
-        ini::IniFile iniFile;
-        try
-        {
-            iniFile.load(iniFileSrc);
-            logger.logInfo("INI file loaded successfully: " + iniFileSrc);
-        }
-        catch (const std::exception &e)
-        {
-            logger.logError("Error loading INI file: " + std::string(e.what()));
-            throw;
-        }
-
-        readPeriod_ = iniFile["Settings"]["ReadPeriod"].as<int>(); // exception
-        /*
-        GetString("Settings", "ReadPeriod", 5);
-
-        GetString(section, key, defaultValue)
-        {
-        try
-        {
-        value = iniFile[section][key].as<std::string>());
-        }
-        catch(...)
-        {
-        return defaultValue;
-        }
-        }
-
-        */
-        cities_ = split(iniFile["Settings"]["Cities"].as<std::string>(), ',');
+        cities_ = split(ini_->getValue("Settings", "Cities", "Warsaw,Krakow,Gdansk"), ',');
     }
 
     bool openDB()

@@ -46,10 +46,11 @@ class DataParser : public IDataParser
         try
         {
             json_ = nlohmann::json::parse(data);
+            Logger::getInstance().logInfo("JSON parsed successfully");
         }
         catch (const nlohmann::json::parse_error &e)
         {
-            throw std::runtime_error("JSON parsing error: " + std::string(e.what()));
+            Logger::getInstance().logError("JSON parse error: " + std::string(e.what()));
         }
     }
     void getWeatherData(WeatherData &wd) override
