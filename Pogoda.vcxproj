@@ -150,12 +150,16 @@
     <ClInclude Include="src\inicpp.h" />
     <ClInclude Include="src\isqlengine.h" />
     <ClInclude Include="src\Logger.h" />
+    <ClInclude Include="src\LoggingTask.h" />
     <ClInclude Include="src\Scheduler.h" />
     <ClInclude Include="src\sqlitedb.h" />
+    <ClInclude Include="src\WeatherFetchingTask.h" />
     <ClInclude Include="src\Wttr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\LoggingTask.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\WeatherFetchingTask.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
