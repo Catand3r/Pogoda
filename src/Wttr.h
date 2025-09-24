@@ -1,12 +1,12 @@
 #pragma once
 #include "Http.h"
+#include "IDataParser.h"
 #include "Logger.h"
 #include "Scheduler.h"
 #include "inicpp.h"
 #include "isqlengine.h"
 #include <fstream>
 #include <memory>
-#include <nlohmann/json.hpp>
 
 class Wttr
 {
@@ -14,6 +14,7 @@ class Wttr
     Wttr(const std::string &iniFileSrc)
     {
         readIniFile(iniFileSrc);
+        parser_ = std::make_unique<DataParser>();
         /*if (!createDB())
         {
             Logger::getInstance().logError("Failed to create or open database");
@@ -59,26 +60,28 @@ class Wttr
                             return;
                         }
 
-                        // zamiast nlohmann -> IDataParser
-                        json_ = nlohmann::json::parse(response);
+                        parser_->parse(response);
 
-                        // from_json() // struct WeatherData{ cirt, desc, temp, feels, humidity, wind}
-                        std::string city = json_["nearest_area"][0]["areaName"][0]["value"].get<std::string>();
-                        std::string desc = json_["current_condition"][0]["weatherDesc"][0]["value"].get<std::string>();
-                        std::string temp = json_["current_condition"][0]["tempC"].get<std::string>();
-                        std::string feels = json_["current_condition"][0]["FeelsLikeC"].get<std::string>();
-                        std::string humidity = json_["current_condition"][0]["humidity"].get<std::string>();
-                        std::string wind = json_["current_condition"][0]["windspeedKmph"].get<std::string>();
+                        WeatherData wd;
+
+                        parser_->getWeatherData(wd);
+                        wd.logWeatherInfo();
 
                         std::ostringstream oss;
-                        oss << "INSERT INTO Pogoda(city, description, temperature, humidity, wind) VALUES("
-                            << "'" << city << "', "
-                            << "'" << desc << "', "
-                            << "'" << temp << " (" << feels << ")" << "', "
-                            << "'" << humidity << "', "
-                            << "'" << wind << "');";
+                        oss << "INSERT INTO Pogoda(time, city, desc, temp, humidity, wind) VALUES("
+                            << "'" << wd.time << "', "
+                            << "'" << wd.city << "', "
+                            << "'" << wd.desc << "', "
+                            << "'" << wd.temp << " (" << wd.feels << ")" << "', "
+                            << "'" << wd.humidity << "', "
+                            << "'" << wd.wind << "');";
 
                         std::string query = oss.str();
+
+                        if (db_ == nullptr)
+                        {
+                            continue;
+                        }
 
                         ISQLEngine::QueryResult queryResult;
 
@@ -104,11 +107,11 @@ class Wttr
     }
 
   private:
-    std::unique_ptr<ISQLEngine> db_; // ISQLEngine& // std::unique_ptr<ISQLEngine>
+    std::unique_ptr<ISQLEngine> db_;
 
     std::ofstream outFile_;
 
-    nlohmann::json json_; // IDataParser& // std::unique_ptr<IDataParser>
+    std::unique_ptr<IDataParser> parser_;
 
     std::vector<std::string> cities_;
 
@@ -168,8 +171,8 @@ class Wttr
             return false;
         }
         ISQLEngine::QueryResult result;
-        return db_->exec("CREATE TABLE IF NOT EXISTS Pogoda (Miasto TEXT, Warunki TEXT, Temperatura REAL, Wilgotnosc "
-                         "REAL, Predkosc wiatru REAL);",
+        return db_->exec("CREATE TABLE IF NOT EXISTS Pogoda (time TEXT, city TEXT, desc TEXT, temp REAL, humidity"
+                         "REAL, wind REAL);",
                          result);
     }
 

@@ -42,6 +42,9 @@
     <ClInclude Include="src\Wttr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\IDataParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
