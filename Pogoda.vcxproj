@@ -145,6 +145,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\DataParser.h" />
     <ClInclude Include="src\Executor.h" />
     <ClInclude Include="src\Http.h" />
     <ClInclude Include="src\IDataParser.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="src\Wttr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\DataParser.cpp" />
     <ClCompile Include="src\LoggingTask.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\WeatherFetchingTask.cpp" />

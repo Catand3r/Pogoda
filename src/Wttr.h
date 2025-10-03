@@ -1,21 +1,21 @@
 #pragma once
+#include "DataParser.h"
 #include "Http.h"
-#include "IDataParser.h"
 #include "IniWrapper.h"
 #include "Logger.h"
+#include "LoggingTask.h"
 #include "Scheduler.h"
+#include "WeatherFetchingTask.h"
 #include "inicpp.h"
 #include "isqlengine.h"
-#include "WeatherFetchingTask.h"
-#include "LoggingTask.h"
-
 #include <fstream>
 #include <memory>
 
 class Wttr
 {
-public:
+  public:
     using Cities = std::vector<std::string>;
+
   public:
     Wttr(const std::string &iniFileSrc)
     {
@@ -47,7 +47,6 @@ public:
     void run()
     {
         Scheduler &scheduler_ = Scheduler::getInstance();
-
 
         auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, *parser_, readPeriod_);
         scheduler_.addTask(std::move(weatherTask));
