@@ -6,11 +6,16 @@
 #include "Scheduler.h"
 #include "inicpp.h"
 #include "isqlengine.h"
+#include "WeatherFetchingTask.h"
+#include "LoggingTask.h"
+
 #include <fstream>
 #include <memory>
 
 class Wttr
 {
+public:
+    using Cities = std::vector<std::string>;
   public:
     Wttr(const std::string &iniFileSrc)
     {
@@ -43,68 +48,12 @@ class Wttr
     {
         Scheduler &scheduler_ = Scheduler::getInstance();
 
-        scheduler_.addTask(
-            [this]() {
-                try
-                {
-                    if (!outFile_.is_open())
-                    {
-                        outFile_.open("../pogoda.json", std::ios::trunc);
-                    }
 
-                    for (const auto &city : cities_)
-                    {
-                        Logger::getInstance().logInfo("Fetching weather for city: " + city);
-                        auto response = HttpClient::getInstance().get("https://wttr.in/" + city + "?format=j1");
+        auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, readPeriod_);
+        scheduler_.addTask(std::move(weatherTask));
 
-                        if (!outFile_.is_open())
-                        {
-                            Logger::getInstance().logError("Failed to open output file");
-                            return;
-                        }
-
-                        parser_->parse(response);
-
-                        WeatherData wd;
-
-                        parser_->getWeatherData(wd);
-                        wd.logWeatherInfo();
-
-                        std::ostringstream oss;
-                        oss << "INSERT INTO Pogoda(time, city, desc, temp, humidity, wind) VALUES("
-                            << "'" << wd.time << "', "
-                            << "'" << wd.city << "', "
-                            << "'" << wd.desc << "', "
-                            << "'" << wd.temp << " (" << wd.feels << ")" << "', "
-                            << "'" << wd.humidity << "', "
-                            << "'" << wd.wind << "');";
-
-                        std::string query = oss.str();
-
-                        if (db_ == nullptr)
-                        {
-                            continue;
-                        }
-
-                        ISQLEngine::QueryResult queryResult;
-
-                        if (!db_->exec(query, queryResult))
-                        {
-                            Logger::getInstance().logError("Failed to execute query: " + query);
-                            continue;
-                        }
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    Logger::getInstance().logError("Error fetching weather data: " + std::string(e.what()));
-                    return;
-                }
-            },
-            readPeriod_);
-
-        scheduler_.addTask([this]() { Logger::getInstance().Write(); },
-                           5); // co 5 sekund flush do pliku
+        auto loggingTask = std::make_unique<LoggingTask>(5000);
+        scheduler_.addTask(std::move(loggingTask));
 
         scheduler_.run();
     }
@@ -118,9 +67,9 @@ class Wttr
 
     std::unique_ptr<IDataParser> parser_;
 
-    std::vector<std::string> cities_;
+    Cities cities_;
 
-    int readPeriod_ = 0;
+    uint64_t readPeriod_ = 0; // miliseconds
 
     void readIniFile()
     {

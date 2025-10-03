@@ -2,15 +2,35 @@
 #include <functional>
 #include <future>
 #include <thread>
+#include "Logger.h"
 
-struct Task
+class ITask
 {
-    std::function<void()> func;
-    // virtual Run() = 0;
-    std::chrono::steady_clock::time_point nextRun;
-    std::chrono::milliseconds readPeriod;
-    std::chrono::milliseconds interval;
-    std::future<void> taskFuture;
+public:
+    ITask(std::chrono::milliseconds interval) : interval_(interval)
+    {
+        nextRun_ = std::chrono::steady_clock::now() + interval;
+    }
+    virtual ~ITask() = default;
+
+    virtual void Run() = 0;
+    bool ShouldRun()
+    {
+        auto now = std::chrono::steady_clock::now();
+        return now >= nextRun_;
+    }
+
+    void MarkFinish()
+    {
+        nextRun_ = std::chrono::steady_clock::now() + interval_;
+    }
+
+private:
+    std::chrono::steady_clock::time_point nextRun_;
+    std::chrono::milliseconds interval_;
+
+public:
+    std::future<void> taskFuture_;
 };
 
 class Executor
@@ -21,29 +41,30 @@ class Executor
         static Executor instance;
         return instance;
     }
-    void execute(Task &task)
-    {
 
-        if (!task.taskFuture.valid())
+    void execute(ITask &task)
+    {
+        if (!task.taskFuture_.valid())
         {
-            task.taskFuture = std::async(std::launch::async, task.func);
+            task.taskFuture_ = std::async(std::launch::async, [&task]() { task.Run(); });
         }
 
-        auto status = task.taskFuture.wait_for(std::chrono::seconds(0));
+        auto status = task.taskFuture_.wait_for(std::chrono::seconds(0));
         if (status == std::future_status::ready)
         {
-            // pobierz wynik (lub obs³u¿ wyj¹tek, jeœli task rzuci³)
+            task.MarkFinish();
+
             try
             {
-                task.taskFuture.get();
+                task.taskFuture_.get();
             }
             catch (const std::exception &e)
             {
-                std::cerr << "Task error: " << e.what() << "\n";
+                Logger::getInstance().logError("Task error: " + std::string(e.what()));
             }
 
             // uruchom nowe zadanie
-            task.taskFuture = std::async(std::launch::async, task.func);
+            task.taskFuture_ = std::async(std::launch::async, [&task]() { task.Run(); });
         }
     }
 
