@@ -1,14 +1,12 @@
 #include "WeatherFetchingTask.h"
 #include "Logger.h"
 #include "isqlengine.h"
+#include "IDataParser.h"
 #include "Http.h"
-#include <nlohmann/json.hpp>
 
-WeatherFetchingTask::WeatherFetchingTask(const Cities& cities, ISQLEngine& db,  uint64_t interval) : ITask(std::chrono::milliseconds(interval)), cities_(cities), db_(db)
+WeatherFetchingTask::WeatherFetchingTask(const Cities& cities, ISQLEngine& db, IDataParser& parser, uint64_t interval) : ITask(std::chrono::milliseconds(interval)), cities_(cities), db_(db), parser_(parser)
 {
-
 }
-
 
 void WeatherFetchingTask::Run()
 {
@@ -19,23 +17,19 @@ void WeatherFetchingTask::Run()
             Logger::getInstance().logInfo("Fetching weather for city: " + city);
             auto response = HttpClient::getInstance().get("https://wttr.in/" + city + "?format=j1");
 
-             auto json_ = nlohmann::json::parse(response);
+            parser_.parse(response);
 
-             // from_json() // struct WeatherData{ cirt, desc, temp, feels, humidity, wind}
-             std::string city = json_["nearest_area"][0]["areaName"][0]["value"].get<std::string>();
-             std::string desc = json_["current_condition"][0]["weatherDesc"][0]["value"].get<std::string>();
-             std::string temp = json_["current_condition"][0]["tempC"].get<std::string>();
-             std::string feels = json_["current_condition"][0]["FeelsLikeC"].get<std::string>();
-             std::string humidity = json_["current_condition"][0]["humidity"].get<std::string>();
-             std::string wind = json_["current_condition"][0]["windspeedKmph"].get<std::string>();
-        
-             std::ostringstream oss;
+            WeatherData wd;
+            parser_.getWeatherData(wd);
+            wd.logWeatherInfo();
+
+            std::ostringstream oss;
                 oss << "INSERT INTO Pogoda(city, description, temperature, humidity, wind) VALUES("
-                    << "'" << city << "', "
-                    << "'" << desc << "', "
-                    << "'" << temp << " (" << feels << ")" << "', "
-                    << "'" << humidity << "', "
-                    << "'" << wind << "');";
+                    << "'" << wd.city << "', "
+                    << "'" << wd.desc << "', "
+                    << "'" << wd.temp << " (" << wd.feels << ")" << "', "
+                    << "'" << wd.humidity << "', "
+                    << "'" << wd.wind << "');";
 
             std::string query = oss.str();
 

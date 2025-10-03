@@ -49,7 +49,7 @@ public:
         Scheduler &scheduler_ = Scheduler::getInstance();
 
 
-        auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, readPeriod_);
+        auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, *parser_, readPeriod_);
         scheduler_.addTask(std::move(weatherTask));
 
         auto loggingTask = std::make_unique<LoggingTask>(5000);
@@ -73,7 +73,7 @@ public:
 
     void readIniFile()
     {
-        readPeriod_ = std::stoi(ini_->getValue("Settings", "ReadPeriod", "5"));
+        readPeriod_ = std::stoi(ini_->getValue("Settings", "ReadPeriod", "5")) * 1000;
 
         cities_ = split(ini_->getValue("Settings", "Cities", "Warsaw,Krakow,Gdansk"), ',');
     }

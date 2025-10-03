@@ -55,10 +55,9 @@ class DataParser : public IDataParser
     }
     void getWeatherData(WeatherData &wd) override
     {
-        from_json(json_, wd);
+        wd = json_;
     }
 
   private:
     nlohmann::json json_;
-    // void from_json(const nlohmann::json &j, WeatherData &wd);
 };
