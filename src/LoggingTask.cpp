@@ -1,4 +1,5 @@
-#include "LoggingTask.h"
+#include "loggingtask.h"
+#include "logger.h"
 
 void LoggingTask::Run()
 {

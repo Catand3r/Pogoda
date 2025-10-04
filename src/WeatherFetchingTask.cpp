@@ -1,8 +1,8 @@
-#include "WeatherFetchingTask.h"
-#include "DataParser.h"
-#include "Http.h"
-#include "Logger.h"
+#include "weatherfetchingtask.h"
+#include "dataparser.h"
+#include "http.h"
 #include "isqlengine.h"
+#include "logger.h"
 
 WeatherFetchingTask::WeatherFetchingTask(const Cities &cities, ISQLEngine &db, IDataParser &parser, uint64_t interval)
     : ITask(std::chrono::milliseconds(interval)), cities_(cities), db_(db), parser_(parser)
@@ -25,7 +25,8 @@ void WeatherFetchingTask::Run()
             wd.logWeatherInfo();
 
             std::ostringstream oss;
-            oss << "INSERT INTO Pogoda(city, description, temperature, humidity, wind) VALUES("
+            oss << "INSERT INTO Pogoda(time, city, desc, temp, humidity, wind) VALUES("
+                << "'" << wd.time << "', "
                 << "'" << wd.city << "', "
                 << "'" << wd.desc << "', "
                 << "'" << wd.temp << " (" << wd.feels << ")" << "', "

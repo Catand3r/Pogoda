@@ -103,7 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);CURLPP_STATIC;CURLPP_STATICLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);CURLPP_STATIC;CURLPP_STATICLIB</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -145,25 +145,37 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\DataParser.h" />
-    <ClInclude Include="src\Executor.h" />
-    <ClInclude Include="src\Http.h" />
-    <ClInclude Include="src\IDataParser.h" />
-    <ClInclude Include="src\inicpp.h" />
-    <ClInclude Include="src\IniWrapper.h" />
-    <ClInclude Include="src\isqlengine.h" />
-    <ClInclude Include="src\Logger.h" />
-    <ClInclude Include="src\LoggingTask.h" />
-    <ClInclude Include="src\Scheduler.h" />
-    <ClInclude Include="src\sqlitedb.h" />
-    <ClInclude Include="src\WeatherFetchingTask.h" />
-    <ClInclude Include="src\Wttr.h" />
+    <ClCompile Include="src\dataparser.cpp" />
+    <ClCompile Include="src\executor.cpp" />
+    <ClCompile Include="src\http.cpp" />
+    <ClCompile Include="src\iniwrapper.cpp" />
+    <ClCompile Include="src\isqlengine.cpp" />
+    <ClCompile Include="src\logger.cpp" />
+    <ClCompile Include="src\loggingtask.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\scheduler.cpp" />
+    <ClCompile Include="src\sqlitedb.cpp" />
+    <ClCompile Include="src\weatherfetchingtask.cpp" />
+    <ClCompile Include="src\wttr.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\DataParser.cpp" />
-    <ClCompile Include="src\LoggingTask.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\WeatherFetchingTask.cpp" />
+    <ClInclude Include="include\dataparser.h" />
+    <ClInclude Include="include\executor.h" />
+    <ClInclude Include="include\http.h" />
+    <ClInclude Include="include\idataparser.h" />
+    <ClInclude Include="include\ihttp.h" />
+    <ClInclude Include="include\iiniwrapper.h" />
+    <ClInclude Include="include\inicpp.h" />
+    <ClInclude Include="include\iniwrapper.h" />
+    <ClInclude Include="include\ischeduler.h" />
+    <ClInclude Include="include\isqlengine.h" />
+    <ClInclude Include="include\itask.h" />
+    <ClInclude Include="include\logger.h" />
+    <ClInclude Include="include\loggingtask.h" />
+    <ClInclude Include="include\scheduler.h" />
+    <ClInclude Include="include\sqlitedb.h" />
+    <ClInclude Include="include\weatherfetchingtask.h" />
+    <ClInclude Include="include\wttr.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

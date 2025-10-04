@@ -1,5 +1,5 @@
-#include "DataParser.h"
-#include "Logger.h"
+#include "dataparser.h"
+#include "logger.h"
 
 void from_json(const nlohmann::json &j, WeatherData &wd)
 {
