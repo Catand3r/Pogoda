@@ -1,18 +1,28 @@
 #include "logger.h"
+#include <filesystem>
 #include <future>
 
 Logger::Logger()
 {
     DateTime dt = getCurrentDateTime(std::chrono::system_clock::now());
 
-    const std::string filename =
-        /*"/log/" + std::to_string(dt.year) + "/" + (dt.month < 10 ? "0" : "") + std::to_string(dt.month) + "/" +
-        (dt.day < 10 ? "0" : "") + std::to_string(dt.day) + "/" + */
-        /*std::to_string(dt.year) + "-" + (dt.month < 10 ? "0" : "") + std::to_string(dt.month) + "-" +
-        (dt.day < 10 ? "0" : "") + std::to_string(dt.day) + "-" + (dt.hour < 10 ? "0" : "") +
-        std::to_string(dt.hour) + ":" + (dt.minute < 10 ? "0" : "") + std::to_string(dt.minute) + ":" +
-        (dt.second < 10 ? "0" : "") + std::to_string(dt.second) +*/
-        "test.log";
+    std::ostringstream ossfilename;
+    ossfilename << std::filesystem::current_path().string() << "/log/" << dt.year << "/" << std::setw(2)
+                << std::setfill('0') << dt.month << "/" << std::setw(2) << std::setfill('0') << dt.day << "/";
+
+    if (!std::filesystem::exists(ossfilename.str()))
+    {
+        if (!std::filesystem::create_directories(ossfilename.str()))
+        {
+            throw(std::exception("Failed to create log directory"));
+        }
+    }
+
+    const std::string filename = ossfilename.str() + std::to_string(dt.year) + "-" + (dt.month < 10 ? "0" : "") +
+                                 std::to_string(dt.month) + "-" + (dt.day < 10 ? "0" : "") + std::to_string(dt.day) +
+                                 "-" + (dt.hour < 10 ? "0" : "") + std::to_string(dt.hour) + "-" +
+                                 (dt.minute < 10 ? "0" : "") + std::to_string(dt.minute) + "-" +
+                                 (dt.second < 10 ? "0" : "") + std::to_string(dt.second) + ".log";
 
     file_.open(filename, std::ios::app);
 
@@ -61,12 +71,16 @@ void Logger::log(const std::string &message)
 
     DateTime dt = getCurrentDateTime(std::chrono::system_clock::now());
 
-    const std::string logEntry =
-        "[" + std::to_string(dt.year) + "-" + (dt.month < 10 ? "0" : "") + std::to_string(dt.month) + "-" +
-        (dt.day < 10 ? "0" : "") + std::to_string(dt.day) + " " + (dt.hour < 10 ? "0" : "") + std::to_string(dt.hour) +
-        ":" + (dt.minute < 10 ? "0" : "") + std::to_string(dt.minute) + ":" + (dt.second < 10 ? "0" : "") +
-        std::to_string(dt.second) + "." + (dt.millisecond < 100 ? (dt.millisecond < 10 ? "00" : "0") : "") +
-        std::to_string(dt.millisecond) + "] " + message + "\n";
+    std::ostringstream oss;
+    oss << "[" << dt.year << "-" << std::setw(2) << std::setfill('0') << dt.month << "-" << std::setw(2)
+        << std::setfill('0') << dt.day << " " << std::setw(2) << std::setfill('0') << dt.hour << ":" << std::setw(2)
+        << std::setfill('0') << dt.minute << ":" << std::setw(2) << std::setfill('0') << dt.second << "."
+        << std::setw(3) << std::setfill('0') << dt.millisecond << "] "
+        << "[ts="
+        << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()
+        << "] " << message << "\n";
+
+    const std::string logEntry = oss.str();
 
     messageQueue_.push(logEntry);
 }

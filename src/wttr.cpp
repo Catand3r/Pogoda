@@ -79,6 +79,6 @@ bool Wttr::createDatabase()
     }
     ISQLEngine::QueryResult result;
     return db_->exec("CREATE TABLE IF NOT EXISTS Pogoda (time TEXT, city TEXT, desc TEXT, temp REAL, humidity"
-                     " REAL, wind REAL);",
+                     " REAL, wind REAL, UNIQUE(time,city));",
                      result);
 }

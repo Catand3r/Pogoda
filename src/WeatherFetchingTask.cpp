@@ -25,7 +25,7 @@ void WeatherFetchingTask::Run()
             wd.logWeatherInfo();
 
             std::ostringstream oss;
-            oss << "INSERT INTO Pogoda(time, city, desc, temp, humidity, wind) VALUES("
+            oss << "INSERT OR IGNORE INTO Pogoda(time, city, desc, temp, humidity, wind) VALUES("
                 << "'" << wd.time << "', "
                 << "'" << wd.city << "', "
                 << "'" << wd.desc << "', "
