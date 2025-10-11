@@ -6,19 +6,21 @@ Logger::Logger()
 {
     DateTime dt = getCurrentDateTime(std::chrono::system_clock::now());
 
-    std::ostringstream ossfilename;
-    ossfilename << std::filesystem::current_path().string() << "/log/" << dt.year << "/" << std::setw(2)
-                << std::setfill('0') << dt.month << "/" << std::setw(2) << std::setfill('0') << dt.day << "/";
+    std::ostringstream directoryPath;
+    directoryPath << std::filesystem::current_path().string() << "\\log\\" << dt.year << "\\" << std::setw(2)
+                << std::setfill('0') << dt.month << "\\" << std::setw(2) << std::setfill('0') << dt.day;
 
-    if (!std::filesystem::exists(ossfilename.str()))
+    if (!std::filesystem::exists(directoryPath.str()))
     {
-        if (!std::filesystem::create_directories(ossfilename.str()))
+        std::error_code ec;
+        if (!std::filesystem::create_directories(directoryPath.str(), ec))
         {
-            throw(std::exception("Failed to create log directory"));
+            std::string exceptionMessage = "Failed to create log directory. Details: " + ec.message();
+            throw(std::exception( exceptionMessage.c_str()));
         }
     }
 
-    const std::string filename = ossfilename.str() + std::to_string(dt.year) + "-" + (dt.month < 10 ? "0" : "") +
+    const std::string filename = directoryPath.str() + "\\" + std::to_string(dt.year) + "-" + (dt.month < 10 ? "0" : "") +
                                  std::to_string(dt.month) + "-" + (dt.day < 10 ? "0" : "") + std::to_string(dt.day) +
                                  "-" + (dt.hour < 10 ? "0" : "") + std::to_string(dt.hour) + "-" +
                                  (dt.minute < 10 ? "0" : "") + std::to_string(dt.minute) + "-" +
