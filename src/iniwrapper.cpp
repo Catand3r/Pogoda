@@ -27,3 +27,9 @@ std::string IniWrapper::getValue(const std::string &section, const std::string &
         return defaultValue;
     }
 }
+
+std::vector<std::string> IniWrapper::getValues(const std::string &section, const std::string &key,
+                                               const std::vector<std::string> &defaultValue) const
+{
+    return split(getValue(section, key, join(defaultValue, ',')), ',');
+}

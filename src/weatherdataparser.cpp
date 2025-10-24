@@ -1,4 +1,4 @@
-#include "dataparser.h"
+#include "weatherdataparser.h"
 #include "logger.h"
 
 void from_json(const nlohmann::json &j, WeatherData &wd)
@@ -18,7 +18,7 @@ void WeatherData::logWeatherInfo() const
                                   temp + " (Feels like: " + feels + "), Humidity: " + humidity + ", Wind: " + wind);
 }
 
-void DataParser::parse(const std::string &data)
+void WeatherDataParser::parse(const std::string &data)
 {
     try
     {
@@ -31,7 +31,8 @@ void DataParser::parse(const std::string &data)
     }
 }
 
-void DataParser::getWeatherData(WeatherData &wd)
+void WeatherDataParser::getData(IDataParser::Result &result)
 {
+    auto &wd = static_cast<WeatherData &>(result);
     wd = json_;
 }

@@ -10,6 +10,9 @@ class IniWrapper : public IIniWrapper
     std::string getValue(const std::string &section, const std::string &key,
                          const std::string &defaultValue) const override;
 
+    virtual std::vector<std::string> getValues(const std::string &section, const std::string &key,
+                                               const std::vector<std::string> &defaultValue) const override;
+
   private:
     ini::IniFile iniFile_;
 };

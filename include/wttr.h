@@ -1,7 +1,8 @@
 #pragma once
-#include "dataParser.h"
+#include "currencydataparser.h"
 #include "iniwrapper.h"
 #include "sqlitedb.h"
+#include "weatherdataparser.h"
 
 class Wttr
 {
@@ -22,13 +23,11 @@ class Wttr
 
     std::ofstream outFile_;
 
-    std::unique_ptr<IDataParser> parser_;
+    std::unique_ptr<IDataParser> weatherparser_;
+
+    std::unique_ptr<IDataParser> currencyparser_;
 
     Cities cities_;
-
-    uint64_t readPeriod_ = 0; // miliseconds
-
-    void readIniFile();
 
     bool openDB();
 

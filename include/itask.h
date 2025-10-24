@@ -1,6 +1,9 @@
 #pragma once
 #include <chrono>
 #include <future>
+#include <memory>
+
+class IiniWrapper;
 
 class ITask
 {
@@ -11,7 +14,12 @@ class ITask
     }
     virtual ~ITask() = default;
 
+    virtual void Init()
+    {
+    }
+
     virtual void Run() = 0;
+
     bool ShouldRun()
     {
         auto now = std::chrono::steady_clock::now();

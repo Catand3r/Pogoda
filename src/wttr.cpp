@@ -1,28 +1,16 @@
 #include "wttr.h"
+#include "currencydataparser.h"
+#include "currencyfetchingtask.h"
 #include "logger.h"
 #include "loggingtask.h"
 #include "scheduler.h"
+#include "weatherdataparser.h"
 #include "weatherfetchingtask.h"
-
-std::vector<std::string> split(const std::string &s, char delimiter)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream tokenStream(s);
-    while (std::getline(tokenStream, token, delimiter))
-    {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
 
 Wttr::Wttr(const std::string &iniFileSrc)
 {
     ini_ = std::make_unique<IniWrapper>(iniFileSrc);
-    parser_ = std::make_unique<DataParser>();
     db_ = std::make_unique<SQLiteDB>("weather.db");
-
-    readIniFile();
 
     if (!createDatabase())
     {
@@ -44,20 +32,24 @@ void Wttr::run()
 {
     Scheduler &scheduler_ = Scheduler::getInstance();
 
-    auto weatherTask = std::make_unique<WeatherFetchingTask>(cities_, *db_, *parser_, readPeriod_);
+    auto weatherInterval = std::stoull(ini_->getValue("Weather", "ReadPeriod", "5000"));
+    weatherparser_ = std::make_unique<WeatherDataParser>();
+
+    auto weatherTask = std::make_unique<WeatherFetchingTask>(*ini_, *db_, *weatherparser_, weatherInterval);
+    weatherTask->Init();
     scheduler_.addTask(std::move(weatherTask));
+
+    auto currencyInterval = std::stoull(ini_->getValue("Currency", "ReadPeriod", "5000"));
+    currencyparser_ = std::make_unique<CurrencyDataParser>();
+
+    auto currencyTask = std::make_unique<CurrencyFetchingTask>(*ini_, *db_, *currencyparser_, currencyInterval);
+    currencyTask->Init();
+    scheduler_.addTask(std::move(currencyTask));
 
     auto loggingTask = std::make_unique<LoggingTask>(5000);
     scheduler_.addTask(std::move(loggingTask));
 
     scheduler_.run();
-}
-
-void Wttr::readIniFile()
-{
-    readPeriod_ = std::stoi(ini_->getValue("Settings", "ReadPeriod", "5")) * 1000;
-
-    cities_ = split(ini_->getValue("Settings", "Cities", "Warsaw,Krakow,Gdansk"), ',');
 }
 
 bool Wttr::openDB()

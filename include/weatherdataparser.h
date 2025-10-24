@@ -2,7 +2,7 @@
 #include "idataparser.h"
 #include <nlohmann/json.hpp>
 
-struct WeatherData
+struct WeatherData : public IDataParser::Result
 {
     std::string time;
     std::string city;
@@ -14,11 +14,11 @@ struct WeatherData
     void logWeatherInfo() const;
 };
 
-class DataParser : public IDataParser
+class WeatherDataParser : public IDataParser
 {
   public:
     void parse(const std::string &data) override;
-    void getWeatherData(WeatherData &wd) override;
+    void getData(Result &result) override;
 
   private:
     nlohmann::json json_;

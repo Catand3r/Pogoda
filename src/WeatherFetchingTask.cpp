@@ -1,12 +1,23 @@
 #include "weatherfetchingtask.h"
-#include "dataparser.h"
 #include "http.h"
+#include "iniwrapper.h"
 #include "isqlengine.h"
 #include "logger.h"
+#include "weatherdataparser.h"
 
-WeatherFetchingTask::WeatherFetchingTask(const Cities &cities, ISQLEngine &db, IDataParser &parser, uint64_t interval)
-    : ITask(std::chrono::milliseconds(interval)), cities_(cities), db_(db), parser_(parser)
+WeatherFetchingTask::WeatherFetchingTask(IIniWrapper &ini, ISQLEngine &db, IDataParser &parser, uint64_t interval)
+    : ITask(std::chrono::milliseconds(interval)), ini_(ini), db_(db), parser_(parser)
 {
+}
+
+void WeatherFetchingTask::Init()
+{
+    ReadIniFile();
+}
+
+void WeatherFetchingTask::ReadIniFile()
+{
+    cities_ = ini_.getValues("Weather", "Cities", {"Warsaw", "Krakow", "Gdansk"});
 }
 
 void WeatherFetchingTask::Run()
@@ -21,7 +32,7 @@ void WeatherFetchingTask::Run()
             parser_.parse(response);
 
             WeatherData wd;
-            parser_.getWeatherData(wd);
+            parser_.getData(wd);
             wd.logWeatherInfo();
 
             std::ostringstream oss;

@@ -145,7 +145,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dataparser.cpp" />
+    <ClCompile Include="src\currencydataparser.cpp" />
+    <ClCompile Include="src\currencyfetchingtask.cpp" />
     <ClCompile Include="src\executor.cpp" />
     <ClCompile Include="src\http.cpp" />
     <ClCompile Include="src\iniwrapper.cpp" />
@@ -155,11 +156,13 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\scheduler.cpp" />
     <ClCompile Include="src\sqlitedb.cpp" />
+    <ClCompile Include="src\weatherdataparser.cpp" />
     <ClCompile Include="src\weatherfetchingtask.cpp" />
     <ClCompile Include="src\wttr.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dataparser.h" />
+    <ClInclude Include="include\currencydataparser.h" />
+    <ClInclude Include="include\currencyfetchingtask.h" />
     <ClInclude Include="include\executor.h" />
     <ClInclude Include="include\http.h" />
     <ClInclude Include="include\idataparser.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="include\loggingtask.h" />
     <ClInclude Include="include\scheduler.h" />
     <ClInclude Include="include\sqlitedb.h" />
+    <ClInclude Include="include\weatherdataparser.h" />
     <ClInclude Include="include\weatherfetchingtask.h" />
     <ClInclude Include="include\wttr.h" />
   </ItemGroup>

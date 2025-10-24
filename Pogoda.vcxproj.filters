@@ -27,9 +27,6 @@
     <ClCompile Include="src\loggingtask.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\dataparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\executor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,11 +51,17 @@
     <ClCompile Include="src\wttr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\currencyfetchingtask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\currencydataparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\weatherdataparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dataparser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\executor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -105,6 +108,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ischeduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\currencyfetchingtask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\currencydataparser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\weatherdataparser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
