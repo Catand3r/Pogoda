@@ -1,12 +1,20 @@
 #pragma once
 #include "idataparser.h"
 #include <nlohmann/json.hpp>
+#include <vector>
+
+using json = nlohmann::json;
+
+struct Rate
+{
+    std::string date;
+    double mid;
+};
 
 struct CurrencyData : public IDataParser::Result
 {
-    std::string date;
-    std::string currency;
-    double rate;
+    std::string code;
+    std::vector<Rate> rates;
     void logCurrencyInfo() const;
 };
 

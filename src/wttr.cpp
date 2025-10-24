@@ -32,14 +32,14 @@ void Wttr::run()
 {
     Scheduler &scheduler_ = Scheduler::getInstance();
 
-    auto weatherInterval = std::stoull(ini_->getValue("Weather", "ReadPeriod", "5000"));
+    auto weatherInterval = std::stoull(ini_->getValue("Weather", "ReadPeriod", "5")) * 1000;
     weatherparser_ = std::make_unique<WeatherDataParser>();
 
     auto weatherTask = std::make_unique<WeatherFetchingTask>(*ini_, *db_, *weatherparser_, weatherInterval);
     weatherTask->Init();
     scheduler_.addTask(std::move(weatherTask));
 
-    auto currencyInterval = std::stoull(ini_->getValue("Currency", "ReadPeriod", "5000"));
+    auto currencyInterval = std::stoull(ini_->getValue("Currency", "ReadPeriod", "5")) * 1000;
     currencyparser_ = std::make_unique<CurrencyDataParser>();
 
     auto currencyTask = std::make_unique<CurrencyFetchingTask>(*ini_, *db_, *currencyparser_, currencyInterval);
@@ -70,7 +70,14 @@ bool Wttr::createDatabase()
         return false;
     }
     ISQLEngine::QueryResult result;
-    return db_->exec("CREATE TABLE IF NOT EXISTS Pogoda (time TEXT, city TEXT, desc TEXT, temp REAL, humidity"
-                     " REAL, wind REAL, UNIQUE(time,city));",
-                     result);
+    const bool weatherResult =
+        db_->exec("CREATE TABLE IF NOT EXISTS Pogoda (time TEXT, city TEXT, desc TEXT, temp REAL, humidity"
+                  " REAL, wind REAL, UNIQUE(time,city));",
+                  result);
+
+    const bool currencyResult = db_->exec("CREATE TABLE IF NOT EXISTS Waluta (time TEXT, code TEXT, rate REAL"
+                                          ", UNIQUE(time,code));",
+                                          result);
+
+    return weatherResult && currencyResult;
 }

@@ -22,6 +22,7 @@ class CurrencyFetchingTask : public ITask
 
   private:
     Currencies currencies_;
+    std::string rateminhistory_;
 
     IIniWrapper &ini_;
     ISQLEngine &db_;

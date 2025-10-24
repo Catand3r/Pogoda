@@ -1,16 +1,26 @@
 #include "currencydataparser.h"
 #include "logger.h"
 
-void from_json(const nlohmann::json &j, CurrencyData &cd)
+void from_json(const json &j, Rate &r)
 {
-    j.at("rates").at(0).at("effectiveDate").get_to(cd.date);
-    j.at("code").get_to(cd.currency);
-    j.at("rates").at(0).at("mid").get_to(cd.rate);
+    j.at("effectiveDate").get_to(r.date);
+    j.at("mid").get_to(r.mid);
+}
+
+void from_json(const json &j, CurrencyData &resp)
+{
+    j.at("code").get_to(resp.code);
+    j.at("rates").get_to(resp.rates);
 }
 
 void CurrencyData::logCurrencyInfo() const
 {
-    Logger::getInstance().logInfo("Date: " + date + ", Currency: " + currency + ", Rate: " + std::to_string(rate));
+    std::string logMsg = "History: " + std::to_string(rates.size()) + " code: " + code + ": ";
+    for (auto &rate : rates)
+    {
+        logMsg += "Date: " + rate.date + ", Mid: " + std::to_string(rate.mid) + "; ";
+    }
+    Logger::getInstance().logInfo(logMsg);
 }
 
 void CurrencyDataParser::parse(const std::string &data)
