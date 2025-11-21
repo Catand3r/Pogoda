@@ -1,10 +1,12 @@
 #pragma once
 #include "itask.h"
+#include "isqlengine.h"
+#include "currencydataparser.h"
+
 #include <chrono>
 #include <string>
 
 class IIniWrapper;
-class ISQLEngine;
 class IDataParser;
 
 class CurrencyFetchingTask : public ITask
@@ -25,6 +27,10 @@ class CurrencyFetchingTask : public ITask
   private:
     std::vector<Range> setRanges(const std::vector<std::chrono::sys_days> &result,
                                  const std::chrono::sys_days &currentTime, const std::chrono::sys_days &oldestTime);
+    void RunForCurrency(const std::string& currency);
+    ISQLEngine::QueryResult GetExistingDatesFromDB(const std::string& currency, const std::chrono::year_month_day& ymdRange);
+    CurrencyData FetchingDataForRange(const std::string& currency, const Range& range);
+    bool SaveDataInDB(const std::vector<CurrencyData>& currencyDataList);
 
     Range range_;
     Currencies currencies_;
