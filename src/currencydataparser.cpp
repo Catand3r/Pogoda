@@ -23,16 +23,24 @@ void CurrencyData::logCurrencyInfo() const
     Logger::getInstance().logInfo(logMsg);
 }
 
-void CurrencyDataParser::parse(const std::string &data)
+bool CurrencyDataParser::parse(const std::string &data)
 {
+    if (data.starts_with("404"))
+    {
+        Logger::getInstance().logWarning("[currencydataparser] Received 404 Not Found response");
+        return false;
+    }
+
     try
     {
         json_ = nlohmann::json::parse(data);
-        Logger::getInstance().logInfo("JSON parsed successfully");
+        Logger::getInstance().logInfo("[currencydataparser] JSON parsed successfully");
+        return true;
     }
     catch (const nlohmann::json::parse_error &e)
     {
-        Logger::getInstance().logError("JSON parse error: " + std::string(e.what()));
+        Logger::getInstance().logError("[currencydataparser] JSON parse error: " + std::string(e.what()));
+        return false;
     }
 }
 

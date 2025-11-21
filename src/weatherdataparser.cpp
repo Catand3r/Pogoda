@@ -18,16 +18,18 @@ void WeatherData::logWeatherInfo() const
                                   temp + " (Feels like: " + feels + "), Humidity: " + humidity + ", Wind: " + wind);
 }
 
-void WeatherDataParser::parse(const std::string &data)
+bool WeatherDataParser::parse(const std::string &data)
 {
     try
     {
         json_ = nlohmann::json::parse(data);
         Logger::getInstance().logInfo("JSON parsed successfully");
+        return true;
     }
     catch (const nlohmann::json::parse_error &e)
     {
         Logger::getInstance().logError("JSON parse error: " + std::string(e.what()));
+        return false;
     }
 }
 

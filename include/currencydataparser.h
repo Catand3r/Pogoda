@@ -21,7 +21,7 @@ struct CurrencyData : public IDataParser::Result
 class CurrencyDataParser : public IDataParser
 {
   public:
-    void parse(const std::string &data) override;
+    bool parse(const std::string &data) override;
     void getData(Result &result) override;
 
   private:

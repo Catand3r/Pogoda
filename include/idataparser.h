@@ -9,6 +9,6 @@ class IDataParser
     };
 
   public:
-    virtual void parse(const std::string &data) = 0;
+    virtual bool parse(const std::string &data) = 0;
     virtual void getData(Result &) = 0;
 };

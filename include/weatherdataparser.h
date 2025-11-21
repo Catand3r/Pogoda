@@ -17,7 +17,7 @@ struct WeatherData : public IDataParser::Result
 class WeatherDataParser : public IDataParser
 {
   public:
-    void parse(const std::string &data) override;
+    bool parse(const std::string &data) override;
     void getData(Result &result) override;
 
   private:
