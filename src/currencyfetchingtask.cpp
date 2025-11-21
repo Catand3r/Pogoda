@@ -14,8 +14,7 @@ bool IsWeekend(const std::chrono::sys_days &date)
 
 bool DateExists(const std::vector<std::chrono::sys_days> &dates, const std::chrono::sys_days &date)
 {
-    return std::any_of(dates.begin(), dates.end(), [&date](const auto &d) { return d == date; }) ||
-                             IsWeekend(date);
+    return std::any_of(dates.begin(), dates.end(), [&date](const auto &d) { return d == date; }) || IsWeekend(date);
 }
 
 std::vector<std::chrono::sys_days> ExtractDatesFromQuery(const ISQLEngine::QueryResult &queryResult)
@@ -65,13 +64,16 @@ std::vector<CurrencyFetchingTask::Range> CurrencyFetchingTask::setRanges(
     while (currentRight != currentTime && currentLeft != currentTime)
     {
         bool leftDateExists = true;
-        while (leftDateExists && currentLeft < currentTime)
+        while (leftDateExists && currentLeft <= currentTime)
         {
-            leftDateExists = DateExists( queryRes, currentLeft);
+            leftDateExists = DateExists(queryRes, currentLeft);
 
             if (leftDateExists)
                 currentLeft += std::chrono::days(1);
         }
+
+        if (currentLeft > currentTime)
+            break;
 
         currentRight = currentLeft;
 
@@ -107,28 +109,34 @@ void CurrencyFetchingTask::Run()
     }
 }
 
-void CurrencyFetchingTask::RunForCurrency(const std::string& currency)
+void CurrencyFetchingTask::RunForCurrency(const std::string &currency)
 {
-    auto date = std::chrono::sys_days(std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())});
+    auto date = std::chrono::sys_days(
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())});
     auto rangeDate = date - std::chrono::days(std::stoi(rateminhistory_));
     auto ymdRange = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(rangeDate)};
 
     ISQLEngine::QueryResult rangeResult = GetExistingDatesFromDB(currency, ymdRange);
-    if( rangeResult.empty())
-        return;
 
     std::vector<std::chrono::sys_days> existingDates = ExtractDatesFromQuery(rangeResult);
     auto ranges = setRanges(existingDates, date, rangeDate);
 
-    std::vector<CurrencyData> currencyDataList; 
+    if (ranges.empty())
+    {
+        Logger::getInstance().logInfo("No new data to fetch for currency: " + currency);
+        return;
+    }
+
+    std::vector<CurrencyData> currencyDataList;
 
     for (auto &range : ranges)
         currencyDataList.push_back(FetchingDataForRange(currency, range));
 
-    SaveDataInDB( currencyDataList);
+    SaveDataInDB(currencyDataList);
 }
 
-ISQLEngine::QueryResult CurrencyFetchingTask::GetExistingDatesFromDB(const std::string& currency, const std::chrono::year_month_day& ymdRange)
+ISQLEngine::QueryResult CurrencyFetchingTask::GetExistingDatesFromDB(const std::string &currency,
+                                                                     const std::chrono::year_month_day &ymdRange)
 {
     std::ostringstream rangeQuery;
     rangeQuery << "SELECT time FROM Waluta WHERE code = '" << currency << "' AND time >= '" << ymdRange
@@ -145,14 +153,15 @@ ISQLEngine::QueryResult CurrencyFetchingTask::GetExistingDatesFromDB(const std::
     return rangeResult;
 }
 
-CurrencyData CurrencyFetchingTask::FetchingDataForRange(const std::string& currency, const CurrencyFetchingTask::Range& range)
+CurrencyData CurrencyFetchingTask::FetchingDataForRange(const std::string &currency,
+                                                        const CurrencyFetchingTask::Range &range)
 {
     const auto startDate = GetStringFromDate(range.first);
     const auto endDate = GetStringFromDate(range.second);
 
     Logger::getInstance().logInfo("Fetching currency data for: " + currency + "From: " + startDate + " to: " + endDate);
     auto response = HttpClient::getInstance().get("https://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" +
-                                                       startDate + "/" + endDate + "/?format=json");
+                                                  startDate + "/" + endDate + "/?format=json");
 
     CurrencyData cd;
 
@@ -160,8 +169,8 @@ CurrencyData CurrencyFetchingTask::FetchingDataForRange(const std::string& curre
         parser_.getData(cd);
     else
     {
-        Logger::getInstance().logWarning("No data available for currency: " + currency + " from " +
-                                              startDate + " to " + endDate);
+        Logger::getInstance().logWarning("No data available for currency: " + currency + " from " + startDate + " to " +
+                                         endDate);
 
         cd.code = currency;
         for (auto dt = range.first; dt <= range.second; dt += std::chrono::days(1))
@@ -176,7 +185,7 @@ CurrencyData CurrencyFetchingTask::FetchingDataForRange(const std::string& curre
     return cd;
 }
 
-bool CurrencyFetchingTask::SaveDataInDB(const std::vector<CurrencyData>& currencyDataList)
+bool CurrencyFetchingTask::SaveDataInDB(const std::vector<CurrencyData> &currencyDataList)
 {
     std::string values;
 
@@ -191,7 +200,7 @@ bool CurrencyFetchingTask::SaveDataInDB(const std::vector<CurrencyData>& currenc
                 qss << "NULL";
             else
                 qss << rate.mid;
-                qss << ")";
+            qss << ")";
             if (i < cd.rates.size() - 1 || &cd != &currencyDataList.back())
             {
                 qss << ", ";
