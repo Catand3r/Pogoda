@@ -1,14 +1,24 @@
 #pragma once
 #include "isqlengine.h"
 #include <memory>
+#include <mutex>
 #include <sqlite3.h>
+#include <unordered_map>
 
 class SQLiteDB : public ISQLEngine
 {
-  private:
-    int lastrc_ = SQLITE_EMPTY;
+    struct ExecResult
+    {
+        int rc = SQLITE_EMPTY;
+        char *errmsg = nullptr;
+    };
 
-    char *errmsg_ = nullptr;
+  private:
+    std::unordered_map<std::thread::id, ExecResult> execResults_;
+
+    // int lastrc_ = SQLITE_EMPTY;
+
+    // char *errmsg_ = nullptr;
 
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> db_ = {nullptr, sqlite3_close};
 
@@ -26,4 +36,6 @@ class SQLiteDB : public ISQLEngine
     int getLastRC() const override;
 
     bool isOpen() const override;
+
+    std::mutex mtx_;
 };
